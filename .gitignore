@@ -46,3 +46,6 @@ report.json
 *.cer
 *.mobileprovision
 *.provisionprofile
+
+# Reviewed public artwork; keep other screenshots and images excluded.
+!Assets/AppIcon.png

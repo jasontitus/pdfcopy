@@ -1,5 +1,7 @@
 # PDFCopy
 
+<img src="Assets/AppIcon.png" width="128" height="128" alt="PDFCopy app icon: a paper page with highlighted text on a blue tile">
+
 A native macOS prototype for opening PDFs, selecting text, and copying it elsewhere. OCR runs locally with Apple Vision. SwiftUI and PDFKit provide the interface and native text selection.
 
 ## Run
@@ -20,6 +22,17 @@ Open or drop a PDF. Existing text is selectable immediately. OCR adds selectable
 The local app bundle is ad-hoc signed for development, not notarized for distribution. It contains no third-party dependencies or network code. Text copied to the system clipboard is handled by macOS and the user's clipboard settings.
 
 This is an early macOS prototype. The iOS interface is not implemented yet. Read the [privacy notes](PRIVACY.md), [roadmap](PLAN.md), and [known limitations](VALIDATION.md) before testing important documents.
+
+## Install on your Mac
+
+1. Build the app using the commands above. Xcode is needed to build; it is not needed just to run an already-built app.
+2. Quit PDFCopy if it is running.
+3. In Finder, open the project's `dist` folder and drag **PDFCopy.app** into **Applications**. If updating, replace the previous copy when prompted.
+4. Launch **PDFCopy** from Applications or Spotlight. Open a PDF with **Command-O**, select text, and press **Command-C** to copy it.
+
+The bundle includes its app icon and runs on macOS 14 or later. The build script produces a local, ad-hoc-signed app for the build machine's architecture; this is not a notarized download or a universal Mac release. Future updates currently require rebuilding and replacing the app.
+
+The icon's source artwork and generation prompt are described in [Assets/README.md](Assets/README.md). The build generates all macOS icon sizes automatically with the system's `sips` and `iconutil` tools.
 
 ## Try a synthetic sample
 
