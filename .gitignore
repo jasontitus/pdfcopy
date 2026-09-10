@@ -1,0 +1,48 @@
+# Build products and local tooling
+.build/
+dist/
+.DS_Store
+.swiftpm/
+.codex/
+.agents/
+.vscode/
+*.app/
+*.xcuserstate
+xcuserdata/
+*.xcresult/
+
+# Private documents and generated comparisons are never source fixtures.
+# Public tests generate synthetic PDFs in Swift instead.
+*.pdf
+*.PDF
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.heic
+*.rtf
+*.docx
+*.xlsx
+*.txt
+*.zip
+tmp/
+output/
+validation/
+private/
+file-*-page-*
+report.json
+*.log
+*.ips
+*.crash
+
+# Credentials and signing material
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.mobileprovision
+*.provisionprofile

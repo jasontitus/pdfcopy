@@ -1,0 +1,46 @@
+# PDFCopy validation — September 10, 2026
+
+Tested two private, user-supplied PDFs entirely on-device. This public summary anonymizes the documents and omits source names, paths, identifiers, and extracted content. The originals were compared byte-for-byte before and after and were unchanged.
+
+| Document | Pages | Added OCR tokens | OCR processing time | Region selection checks |
+| --- | ---: | ---: | ---: | ---: |
+| Document A (mixed text and scans) | 3 | 616 | 2.30 seconds | 614 / 614 |
+| Document B (scanned form) | 5 | 480 | 2.62 seconds | 471 / 471 |
+
+Timing covers page rendering for recognition, Vision OCR, and composing the text layer in the core pipeline. It excludes opening the app, refreshing its display document, and the independent QA image comparisons. These are individual local measurements, not a general performance guarantee.
+
+## What passed
+
+- All eight pages gained selectable text. All 1,085 tested OCR regions returned the recognized token when selected by its bounds. This is a selection/alignment test, not a measurement of recognition accuracy against a human transcript.
+- The before/after renders were pixel-identical on all eight pages at the QA rendering resolution.
+- Automated double-click simulations selected the entire OCR token in 1,057 of 1,085 cases. The remaining cases were compound or punctuated strings such as legal section references, hyphenated IDs, and slashes, for which native PDFKit selects a smaller word segment. Region selection recovered all tested tokens.
+- A real UI test opened Document A, waited for OCR, double-clicked a heading, copied with Command-C, and pasted the correct text into a new TextEdit document.
+- The complete automated suite passed: 10 tests, including real-document validation, real Vision OCR, mixed pages, no duplicate native text, crop/rotation geometry, page appearance, close word spacing, background document updates, selection deferral, and accessibility traversal.
+
+## Bugs found and fixed
+
+1. Document A's first page has an unusable embedded font mapping: PDFKit initially extracts repeated `ÿ` characters. Geometric overlap alone incorrectly suppressed useful OCR. Duplicate detection now checks both location and matching characters. The complete printed heading and body paragraph are selectable after OCR.
+2. Tightly positioned OCR words could lose their separating space when copied. The invisible layer now contains explicit word separators.
+3. Temporary OCR document ownership could leave PDFKit with invalid page references and crash accessibility inspection. OCR documents remain alive until a fresh display document is composed; the app does not mutate the document currently being displayed.
+
+## Remaining quality gaps
+
+- Vision misses several isolated paragraph numbers on Document A's second page, including 1, 2, 4, 5, and 7 in this run.
+- Handwriting and the overlapping signature/printed-name area on Document A's third page are not accurately transcribed. Short identifiers also contain occasional letter/digit substitutions.
+- Whole-page extraction interleaves a stamp with a heading. Some form label/value pairs and multi-line table rows have imperfect reading order. Selecting a specific word or region remains the better-tested path.
+- Decorative symbols can be recognized as text, including progress circles and an external-link icon. There are occasional ordinary word/character errors.
+- The black redaction on Document B remained black in the rendered comparisons and contributed no recovered value in the OCR output. This was a rendering/OCR check, not a forensic redaction audit.
+- Large-document memory/performance, additional languages, unusual page layouts, annotations/forms, and offline startup on a clean machine still require validation. The app is a locally signed prototype, not a notarized release.
+
+## Reproduce
+
+```sh
+PDFCOPY_TEST_DOCUMENTS='/absolute/path/to/pdf/folder' \
+CLANG_MODULE_CACHE_PATH="$PWD/.build/clang-cache" \
+SWIFTPM_MODULECACHE_OVERRIDE="$PWD/.build/module-cache" \
+swift test --disable-sandbox
+```
+
+Private extracted text, rendered comparison images, and raw metrics stay in `.build/validation/`, which is ignored by version control. No source PDFs or extracted private content are embedded in the test source.
+
+The next engine decision should compare Vision with another fully local engine on these specific failures. MinerU has not yet been benchmarked or installed.
