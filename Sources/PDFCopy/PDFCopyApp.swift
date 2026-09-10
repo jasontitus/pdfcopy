@@ -63,7 +63,8 @@ struct ContentView: View {
                     PDFSearchBar(search: model.search, recognizing: model.running) { model.showsSearch = false }
                     Divider()
                 }
-                NativePDFView(model: model)
+                PageReadinessView(model: model)
+                NativePDFView(model: model).overlay { RegionSelectionOverlay(model: model) }
             } else if model.needsPassword {
                 VStack(spacing: 16) {
                     Image(systemName: "lock.doc").font(.system(size: 42)).foregroundStyle(.secondary)
@@ -91,11 +92,13 @@ struct ContentView: View {
                 if model.running {
                     ProgressView(value: Double(model.processed), total: Double(max(1, model.pageCount))).frame(width: 90)
                     Button("Pause") { model.toggleProcessing() }.font(.caption)
-                } else if model.processed < model.pageCount, !model.needsPassword, model.document?.allowsCopying == true {
+                } else if model.processed < model.pageCount, !model.openingCache, !model.needsPassword, model.document?.allowsCopying == true {
                     Button("Resume") { model.toggleProcessing() }.font(.caption)
                 }
             }.padding(.horizontal, 14).padding(.vertical, 10)
         }
+        .sheet(isPresented: $model.showsRegionResult, onDismiss: { model.dismissRegionResult() }) { RegionResultView(model: model) }
+        .sheet(isPresented: $model.showsCacheSettings) { OCRCacheSettings(model: model) }
         .navigationTitle(model.fileName)
         .toolbar {
             ToolbarItemGroup(placement: .navigation) {
@@ -107,11 +110,17 @@ struct ContentView: View {
                 }
             }
             ToolbarItemGroup {
+                Button { model.showsCacheSettings = true } label: { Label("Saved text", systemImage: "internaldrive") }
                 if model.document != nil, !model.needsPassword {
                     Button { model.showSearch() } label: { Label("Search", systemImage: "magnifyingglass") }
                     Button { model.pdfView?.zoomOut(nil) } label: { Image(systemName: "minus.magnifyingglass") }.help("Zoom out")
                     Button { model.pdfView?.zoomIn(nil) } label: { Image(systemName: "plus.magnifyingglass") }.help("Zoom in")
                     Button("Fit") { model.pdfView?.autoScales = true }.help("Fit page to window")
+                    Menu("Recognize") {
+                        Button("Recognize Area…") { model.beginRegionSelection() }
+                        Button("Recognize Selection") { model.recognizeSelectedArea() }.disabled(!model.hasSelection)
+                        Button("Recognize Whole Page Again") { model.retryPage() }
+                    }.disabled(model.document?.allowsCopying != true)
                     Button("Recognize Again") { model.retryPage() }
                         .disabled(model.document?.allowsCopying != true)
                         .help("Rebuild this page’s text from its appearance if existing text copies incorrectly")
@@ -142,7 +151,7 @@ struct NativePDFView: NSViewRepresentable {
         view.backgroundColor = .windowBackgroundColor
         view.document = model.document
         view.layoutDocumentView()
-        model.pdfView = view
+        model.attach(view)
         model.search.attach(document: model.document, view: view)
         context.coordinator.observe(view)
         return view

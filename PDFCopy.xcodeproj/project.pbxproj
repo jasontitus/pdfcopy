@@ -7,9 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07ECA384162A56AA2043B263 /* CacheIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54BFB54EDB2DCD4D789933F0 /* CacheIntegrationTests.swift */; };
 		0ECF5FA8EC3CFDEA6EBF5E08 /* DocumentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDD91A3CD35F4FB33725EAA /* DocumentModel.swift */; };
 		111525BAE2A154E4A164243B /* PDFSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA3117C59D8A847BC6FFE35 /* PDFSearchModel.swift */; };
+		1B9E57E2361965642A2F9AD7 /* OCRCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 894AA9E4E12DC391C5116AE0 /* OCRCache.swift */; };
+		1D0197DAAE1016B71249EB78 /* ReadingToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BF6208BDF03DD66C909F347 /* ReadingToolsTests.swift */; };
 		26610DF804DC0BF127F0F8F2 /* ScanTextLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */; };
+		45C99AE482AEBC9DF8B2762C /* OCRCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0377DE59E48FE3D7A93D6A5B /* OCRCacheTests.swift */; };
+		56676A9929CBB2E201A1004F /* RegionRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03B8166F1609227B5CA7392 /* RegionRecognizer.swift */; };
+		6B5D621921E922F6487E0B71 /* PreciseTextSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA0558A4E5822615663F4F /* PreciseTextSelection.swift */; };
 		879CFBF5FDF1B69F17C193F9 /* PageRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4984514CC41B2656FD7016F0 /* PageRecognizer.swift */; };
 		926CCD42D70D10D26C78CFC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34C0E13403B28960D0E1381B /* Assets.xcassets */; };
 		9564E1DDFB0555A5FD9F65C3 /* PDFCopyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -19,6 +25,7 @@
 		BFCFF34702DB616D4D196F7B /* PDFCopyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */; };
 		D755436A9EA58108A518971B /* ScanTextLayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */; };
 		DCD753A269FCF4D3F00DB93B /* PDFCopyIOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7F2629C97BD8C7CC016DEF /* PDFCopyIOSApp.swift */; };
+		F1D8735173BFD66A54FC32F7 /* ReadingTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901FC27565B8B25BB96E596B /* ReadingTools.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,19 +60,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0377DE59E48FE3D7A93D6A5B /* OCRCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRCacheTests.swift; sourceTree = "<group>"; };
+		1BF6208BDF03DD66C909F347 /* ReadingToolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingToolsTests.swift; sourceTree = "<group>"; };
 		22A4FD2C118D741CAD90DA72 /* PDFSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFSearchTests.swift; sourceTree = "<group>"; };
 		34C0E13403B28960D0E1381B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3BEAD360D22F65E10925BF5E /* MobileDocumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileDocumentTests.swift; sourceTree = "<group>"; };
 		431362699A3ACD7B65B28A59 /* PDFCopyIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PDFCopyIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4984514CC41B2656FD7016F0 /* PageRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageRecognizer.swift; sourceTree = "<group>"; };
+		54BFB54EDB2DCD4D789933F0 /* CacheIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheIntegrationTests.swift; sourceTree = "<group>"; };
 		67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanTextLayerTests.swift; sourceTree = "<group>"; };
 		7456A39639CCCE732463BD49 /* MobilePDFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobilePDFView.swift; sourceTree = "<group>"; };
 		808E80B5953F93CD9A21DE58 /* PDFCopyIOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PDFCopyIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		894AA9E4E12DC391C5116AE0 /* OCRCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRCache.swift; sourceTree = "<group>"; };
 		8FA3117C59D8A847BC6FFE35 /* PDFSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFSearchModel.swift; sourceTree = "<group>"; };
+		901FC27565B8B25BB96E596B /* ReadingTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingTools.swift; sourceTree = "<group>"; };
 		9B7F2629C97BD8C7CC016DEF /* PDFCopyIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFCopyIOSApp.swift; sourceTree = "<group>"; };
+		A4AA0558A4E5822615663F4F /* PreciseTextSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreciseTextSelection.swift; sourceTree = "<group>"; };
 		ACDD91A3CD35F4FB33725EAA /* DocumentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentModel.swift; sourceTree = "<group>"; };
 		B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PDFCopyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanTextLayer.swift; sourceTree = "<group>"; };
+		D03B8166F1609227B5CA7392 /* RegionRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionRecognizer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +97,7 @@
 		03127AAA7850367AD108B9F8 /* PDFCopyAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				54BFB54EDB2DCD4D789933F0 /* CacheIntegrationTests.swift */,
 				22A4FD2C118D741CAD90DA72 /* PDFSearchTests.swift */,
 			);
 			name = PDFCopyAppTests;
@@ -92,7 +107,10 @@
 		165340750B31D064336080CC /* PDFCopyCore */ = {
 			isa = PBXGroup;
 			children = (
+				894AA9E4E12DC391C5116AE0 /* OCRCache.swift */,
 				4984514CC41B2656FD7016F0 /* PageRecognizer.swift */,
+				A4AA0558A4E5822615663F4F /* PreciseTextSelection.swift */,
+				D03B8166F1609227B5CA7392 /* RegionRecognizer.swift */,
 				C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */,
 			);
 			name = PDFCopyCore;
@@ -102,6 +120,8 @@
 		3BCD935089C8EC79F7C4FCCE /* PDFCopyCoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				0377DE59E48FE3D7A93D6A5B /* OCRCacheTests.swift */,
+				1BF6208BDF03DD66C909F347 /* ReadingToolsTests.swift */,
 				67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */,
 			);
 			name = PDFCopyCoreTests;
@@ -123,6 +143,7 @@
 			children = (
 				ACDD91A3CD35F4FB33725EAA /* DocumentModel.swift */,
 				8FA3117C59D8A847BC6FFE35 /* PDFSearchModel.swift */,
+				901FC27565B8B25BB96E596B /* ReadingTools.swift */,
 			);
 			name = PDFCopy;
 			path = Sources/PDFCopy;
@@ -275,6 +296,7 @@
 				9B4046A4F319141C1B386912 /* MobilePDFView.swift in Sources */,
 				DCD753A269FCF4D3F00DB93B /* PDFCopyIOSApp.swift in Sources */,
 				111525BAE2A154E4A164243B /* PDFSearchModel.swift in Sources */,
+				F1D8735173BFD66A54FC32F7 /* ReadingTools.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,7 +304,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B9E57E2361965642A2F9AD7 /* OCRCache.swift in Sources */,
 				879CFBF5FDF1B69F17C193F9 /* PageRecognizer.swift in Sources */,
+				6B5D621921E922F6487E0B71 /* PreciseTextSelection.swift in Sources */,
+				56676A9929CBB2E201A1004F /* RegionRecognizer.swift in Sources */,
 				26610DF804DC0BF127F0F8F2 /* ScanTextLayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,8 +316,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07ECA384162A56AA2043B263 /* CacheIntegrationTests.swift in Sources */,
 				99530EC2CE645C4A75DB67E6 /* MobileDocumentTests.swift in Sources */,
+				45C99AE482AEBC9DF8B2762C /* OCRCacheTests.swift in Sources */,
 				B18FBA82AD2981C3A8AA4D01 /* PDFSearchTests.swift in Sources */,
+				1D0197DAAE1016B71249EB78 /* ReadingToolsTests.swift in Sources */,
 				D755436A9EA58108A518971B /* ScanTextLayerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -389,7 +417,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -408,7 +436,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.1;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -454,7 +482,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -467,7 +495,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.1;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

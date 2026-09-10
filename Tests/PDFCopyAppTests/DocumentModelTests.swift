@@ -28,7 +28,7 @@ final class DocumentModelTests: XCTestCase {
         XCTAssertNotNil(copy.string, "Page copy must retain OCR")
         let staging = PDFDocument(); staging.insert(copy, at: 0)
         XCTAssertNotNil(PDFDocument(data: try XCTUnwrap(staging.dataRepresentation()))?.string, "Serialization must retain OCR")
-        let model = DocumentModel()
+        let model = DocumentModel(cache: nil)
         let view = PDFView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
         model.pdfView = view
         model.open(url)
@@ -61,8 +61,9 @@ final class DocumentModelTests: XCTestCase {
         XCTAssertFalse(model.running)
         XCTAssertTrue(model.document === selectedDocument, "Do not replace the document during selection")
         XCTAssertEqual(view.currentSelection?.string, selectedText)
-        view.clearSelection()
-        model.selectionChanged()
+        XCTAssertTrue(model.canApplyText)
+        XCTAssertTrue(model.pageReadiness.contains("clear selection"))
+        model.applyImprovedText()
         let applyDeadline = Date().addingTimeInterval(3)
         while model.document === selectedDocument, Date() < applyDeadline { try await Task.sleep(nanoseconds: 30_000_000) }
         XCTAssertFalse(model.document === selectedDocument, "Apply the pending OCR after selection ends")
@@ -86,7 +87,7 @@ final class DocumentModelTests: XCTestCase {
         try XCTUnwrap(source.dataRepresentation()).write(to: url)
         defer { try? FileManager.default.removeItem(at: url) }
 
-        let model = DocumentModel()
+        let model = DocumentModel(cache: nil)
         let view = CountingPDFView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
         view.displayMode = .singlePageContinuous
         model.pdfView = view

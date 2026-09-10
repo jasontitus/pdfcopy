@@ -31,7 +31,8 @@ struct MobileContentView: View {
                         PDFSearchBar(search: model.search, recognizing: model.running) { model.showsSearch = false }
                         Divider()
                     }
-                    MobilePDFView(model: model)
+                    PageReadinessView(model: model)
+                    MobilePDFView(model: model).overlay { RegionSelectionOverlay(model: model) }
                     HStack {
                         Button { model.movePage(-1) } label: { Image(systemName: "chevron.left") }
                             .disabled(model.currentPage == 0).accessibilityLabel("Previous page")
@@ -39,6 +40,10 @@ struct MobileContentView: View {
                         Button { model.movePage(1) } label: { Image(systemName: "chevron.right") }
                             .disabled(model.currentPage >= model.pageCount - 1).accessibilityLabel("Next page")
                         Spacer()
+                        if model.hasSelection {
+                            Text(model.pdfView?.currentSelection?.string ?? "").font(.caption).lineLimit(1)
+                                .accessibilityLabel("Selected text")
+                        }
                         Button { model.copySelection() } label: { Label("Copy", systemImage: "doc.on.doc") }
                             .disabled(!model.hasSelection)
                     }.padding(.horizontal).padding(.vertical, 8)
@@ -46,7 +51,7 @@ struct MobileContentView: View {
                     ContentUnavailableView {
                         Label("Your PDF. Your words.", systemImage: "doc.text.viewfinder")
                     } description: {
-                        Text("Open a PDF, touch and hold text to select it, then copy it anywhere. Text recognition stays on your device.")
+                        Text("Open a PDF, tap a word to select it, or hold and drag to select more. Copy it anywhere. Text recognition stays on your device.")
                     } actions: {
                         Button("Open PDF…") { importing = true }.buttonStyle(.borderedProminent)
                     }
@@ -59,7 +64,7 @@ struct MobileContentView: View {
                     if model.running {
                         ProgressView().controlSize(.small)
                         Button("Pause") { model.toggleProcessing() }.font(.caption)
-                    } else if model.processed < model.pageCount, !model.needsPassword, model.document?.allowsCopying == true {
+                    } else if model.processed < model.pageCount, !model.openingCache, !model.needsPassword, model.document?.allowsCopying == true {
                         Button("Resume") { model.toggleProcessing() }.font(.caption)
                     }
                 }.padding(10)
@@ -71,16 +76,24 @@ struct MobileContentView: View {
                     Button { importing = true } label: { Label("Open PDF", systemImage: "folder") }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    if model.document == nil || model.needsPassword {
+                        Button { model.showsCacheSettings = true } label: { Label("Saved text", systemImage: "internaldrive") }
+                    }
                     if model.document != nil, !model.needsPassword {
                         Button { model.showSearch() } label: { Label("Search", systemImage: "magnifyingglass") }
                         Menu {
                             Button("Fit Page") { model.pdfView?.autoScales = true }
+                            Button("Recognize Area…") { model.beginRegionSelection() }.disabled(model.document?.allowsCopying != true)
+                            Button("Recognize Selection") { model.recognizeSelectedArea() }.disabled(!model.hasSelection)
+                            Button("Saved Text Settings") { model.showsCacheSettings = true }
                             Button("Recognize Again") { model.retryPage() }.disabled(model.document?.allowsCopying != true)
                         } label: { Label("More", systemImage: "ellipsis.circle") }
                     }
                 }
             }
         }
+        .sheet(isPresented: $model.showsRegionResult, onDismiss: { model.dismissRegionResult() }) { RegionResultView(model: model) }
+        .sheet(isPresented: $model.showsCacheSettings) { OCRCacheSettings(model: model) }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf]) { result in
             switch result {
             case .success(let url): model.open(url)

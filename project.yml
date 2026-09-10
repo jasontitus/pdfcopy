@@ -5,8 +5,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "0.2.1"
-    CURRENT_PROJECT_VERSION: "5"
+    MARKETING_VERSION: "0.3.0"
+    CURRENT_PROJECT_VERSION: "6"
 targets:
   PDFCopyCore:
     type: framework
@@ -24,6 +24,7 @@ targets:
       - iOS/PDFCopy
       - Sources/PDFCopy/DocumentModel.swift
       - Sources/PDFCopy/PDFSearchModel.swift
+      - Sources/PDFCopy/ReadingTools.swift
     dependencies:
       - target: PDFCopyCore
     settings:
@@ -54,7 +55,7 @@ targets:
   PDFCopyIOSTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [iOS/Tests, Tests/PDFCopyAppTests/PDFSearchTests.swift, Tests/PDFCopyCoreTests/ScanTextLayerTests.swift]
+    sources: [iOS/Tests, Tests/PDFCopyAppTests/PDFSearchTests.swift, Tests/PDFCopyCoreTests/ScanTextLayerTests.swift, Tests/PDFCopyCoreTests/OCRCacheTests.swift, Tests/PDFCopyCoreTests/ReadingToolsTests.swift, Tests/PDFCopyAppTests/CacheIntegrationTests.swift]
     dependencies:
       - target: PDFCopyIOS
     settings:

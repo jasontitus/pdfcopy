@@ -16,7 +16,7 @@ final class MobileDocumentTests: XCTestCase {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("scan-\(UUID()).pdf")
         try XCTUnwrap(source.dataRepresentation()).write(to: url)
         defer { try? FileManager.default.removeItem(at: url) }
-        let model = DocumentModel()
+        let model = DocumentModel(cache: nil)
         let view = PDFView(frame: CGRect(x: 0, y: 0, width: 390, height: 650))
         view.displayMode = .singlePageContinuous
         model.pdfView = view

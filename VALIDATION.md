@@ -70,3 +70,11 @@ The private scan was inspected locally before and after repair; the name-region 
 Six synthetic regression tests cover stale hidden OCR replacement, accurate hidden OCR preservation, visible-text protection, low coverage/confidence protection, small-page raster resolution, and actual Vision recognition on a synthetic card. All 18 default Mac tests pass; the separate private-document test remains opt-in.
 
 All nine iOS integration tests pass on the iPhone simulator. The earlier private eight-page test set also passes, with no measured changes to page appearance at the test render resolution. Signed iPhone and packaged Mac builds succeed.
+
+## Reading workflow improvements (0.3.0)
+
+The Mac suite passes 27 synthetic tests (one separate private-document test skipped); the iPhone simulator suite passes 18 tests. Added coverage checks content-keyed OCR reuse, changed-document misses, capacity/expiry eviction, clear-cache rejection of in-flight writes, never caching password-protected PDFs, region cancellation on opening another document, and selection-delayed readiness. Focused OCR is tested against neighboring columns and all quarter-turn crop/rotation combinations. Synthetic skewed, small-print, column, table, and name fixtures exercise actual Vision recognition and exact-range word selection.
+
+A live Mac UI check drew a region around a sentence, obtained the correct preview, copied an individual word, and cleared the cache. The displayed storage count fell to zero and the open PDF remained available. Phone tap handling uses PDF character ranges; this improves selection specificity but does not guarantee correct OCR for every scan or reading order for arbitrary tables/columns.
+
+A physical iPhone test run was attempted but could not launch while the device was locked. It was cancelled rather than counted as a pass. On-device touch-gesture usability and the physical-device integration run remain pending; simulator and Mac results above are verified.

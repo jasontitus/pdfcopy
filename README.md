@@ -17,7 +17,7 @@ open dist/PDFCopy.app
 
 Or open `Package.swift` in Xcode and run the PDFCopy executable scheme. `swift run PDFCopy /absolute/path/to/document.pdf` also works.
 
-Open or drop a PDF. Existing text is selectable immediately. OCR adds selectable text to scans and image regions in the background, starting with the visible page. Double-click a word, drag a selection, then press Command-C or use the Copy button. Use **Recognize Again** on a page whose embedded text copies incorrectly. Recognition never overwrites your PDF. It is recomputed when you reopen the file.
+Open or drop a PDF. Existing text is selectable immediately. OCR adds selectable text to scans and image regions in the background, starting with the visible page. Double-click a word, drag a selection, then press Command-C or use the Copy button. Use **Recognize Again** on a page whose embedded text copies incorrectly. Recognition never overwrites your PDF. Completed recognition is remembered in a bounded local cache for fast reopening; you can disable or clear it in Saved Text Settings.
 
 The local app bundle is ad-hoc signed for development, not notarized for distribution. It contains no third-party dependencies or network code. Text copied to the system clipboard is handled by macOS and the user's clipboard settings.
 
@@ -36,6 +36,13 @@ The bundle includes its app icon and runs on macOS 14 or later. The build script
 
 The icon's source artwork and generation prompt are described in [Assets/README.md](Assets/README.md). The build generates all macOS icon sizes automatically with the system's `sips` and `iconutil` tools.
 
+## Reading tools (0.3.0)
+
+- **Page readiness:** the banner above the PDF shows whether the visible page is ready, recognizing, or waiting to apply improved text. Choose **Use improved text** to clear the current selection and apply pending OCR safely.
+- **Precise word selection on iPhone/iPad:** tap a word to select its explicit character range instead of relying on PDFKit's broader word/phrase selection. Hold and drag remains available for larger selections. The footer previews selected text beside Copy.
+- **Focused OCR:** choose **Recognize Area…** from Recognize (Mac) or More (iOS), then drag around text inside one page. **Recognize Selection** uses the current single-page selection. A higher-resolution, on-device OCR pass opens a read-only text preview with Copy All and individual word buttons. It does not rewrite the PDF or save that region result in the cache.
+- **Saved text:** use the drive icon on Mac or **More → Saved Text Settings** on iOS. Completed OCR copies are stored only on this device, keyed by PDF contents and engine/OS version. The cache is limited to 256 MB / 20 files, expires entries after 30 days without access, and is excluded from backups. iOS files use complete file protection; local files use owner-only permissions. Password-protected PDFs are never cached. Disabling caching clears existing saved copies; clearing also blocks in-flight work from recreating them during the current open session. Originals stay unchanged.
+
 ## Search
 
 On Mac, press **Command-F** or click Search. Type a word or phrase to highlight matches, then use the arrows, **Command-G**, or **Shift-Command-G** to navigate. On iPhone/iPad, tap the magnifying glass. Search ignores case and accents and updates as OCR finishes. It searches text within each page; phrases spanning page breaks and text split by layout/line breaks may not match. Search highlights do not change the text selected for copying or create PDF annotations.
@@ -48,7 +55,7 @@ Requires iOS/iPadOS 17+ and Xcode with the iOS SDK.
 2. Select the **PDFCopyIOS** target, open **Signing & Capabilities**, and choose your development team (also set it on the test target if running tests on a device). Use a unique bundle identifier if Xcode requests one. Signing credentials are not included in this repository.
 3. Connect your iPhone/iPad, select it as the run destination, and enable Developer Mode on the device if prompted.
 4. Click **Run**. Once installed, open PDFCopy and tap the folder to choose a PDF from Files. You can also use a PDF's Share menu and choose PDFCopy when offered.
-5. Touch and hold text to select it, adjust the selection handles, then use **Copy**. Pinch to zoom; tap Search to find text.
+5. Tap a word to select it precisely, or touch and hold and adjust the selection handles to select more, then use **Copy**. Pinch to zoom; tap Search to find text.
 
 This is a development install, not an App Store or TestFlight release. Real-device signing requires your Apple development account; simulator builds do not. Recognition pauses when the app enters the background and resumes when it becomes active. A Files provider may download the original PDF (for example from iCloud); OCR and search themselves run locally.
 
