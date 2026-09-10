@@ -102,3 +102,5 @@ The initial OCR engine has been evaluated on eight pages from two user-supplied 
 To run the optional real-document tests, set `PDFCOPY_TEST_DOCUMENTS` to a local folder when running `swift test`. Rendered comparisons, extracted text, and metrics stay under the ignored `.build/validation` directory; private document contents are not included in the source tree.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development and bug-report guidance.
+
+Scanner-generated PDFs sometimes contain incorrect invisible OCR text. When a page contains images and exclusively invisible text, PDFCopy can rebuild that text layer if fresh, confident OCR conflicts with it and recognizes enough of the original content. This uses a rendered background in the in-memory copy; the source PDF stays unchanged. Mixed/visible-text pages and uninspected nested content keep their original text; **Recognize Again** remains available. Small card-sized scans now render at a minimum 1600-pixel longest edge (within the existing 16-megapixel limit).

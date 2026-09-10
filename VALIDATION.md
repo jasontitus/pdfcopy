@@ -60,3 +60,13 @@ A live Mac check on Document B found eight matches for a test query and advanced
 Three iOS integration tests passed on an iPhone 17 Pro simulator (iOS 26.3.1), an iPad mini simulator (iOS 26.5), and an iPhone 15 Pro simulator (iOS 17.2). These exercise shared search plus a three-page synthetic scan through actual Vision OCR, deferred refresh during scrolling, preserved scale/offset, and copying recognized text to the iOS pasteboard. An unsigned physical-device build also succeeded. Simulator UI inspection stalled, so these results do not establish end-to-end touch-gesture or Files/share-menu usability. Physical-device installation, touch selection, background transitions, memory pressure, and large-document performance remain to be checked before release.
 
 Search uses temporary PDFView highlights, not document annotations. It matches within a page's extracted string; line-break/layout differences and phrases spanning page boundaries can prevent a match. Results expand when recognized text reaches the displayed document. Search does not require an account or network service.
+
+## Stale scanner OCR (0.2.1)
+
+A two-page private card scan contained corrupt invisible text from the scanner, even though the visible lettering was readable and Vision recognized it correctly. Adding new OCR on top retained competing bad text at the same positions. The repair detects image pages whose text-showing operators are exclusively invisible, checks OCR coverage and confidence, and replaces the old layer when the new OCR conflicts. Unknown nested forms and visible-text pages are excluded from automatic rebuilding. Graphics-state save/restore is tracked while examining text rendering modes.
+
+The private scan was inspected locally before and after repair; the name-region selection now contains the correctly recognized characters without the stale scanner spelling. PDFKit can expand word selection to a whole nearby name/label line; selection handles still control the exact copied range. The in-memory rebuilt background was visually checked. The original PDF was not modified, and no private text, images, file paths, or document metadata are included in these tests or this summary.
+
+Six synthetic regression tests cover stale hidden OCR replacement, accurate hidden OCR preservation, visible-text protection, low coverage/confidence protection, small-page raster resolution, and actual Vision recognition on a synthetic card. All 18 default Mac tests pass; the separate private-document test remains opt-in.
+
+All nine iOS integration tests pass on the iPhone simulator. The earlier private eight-page test set also passes, with no measured changes to page appearance at the test render resolution. Signed iPhone and packaged Mac builds succeed.

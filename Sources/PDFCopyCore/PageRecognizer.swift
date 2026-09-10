@@ -8,7 +8,10 @@ public struct RecognizedRun {
     public let text: String
     /// Coordinates in the rendered page, in PDF points with a bottom-left origin.
     public let bounds: CGRect
-    public init(text: String, bounds: CGRect) { self.text = text; self.bounds = bounds }
+    public let confidence: Float
+    public init(text: String, bounds: CGRect, confidence: Float = 1) {
+        self.text = text; self.bounds = bounds; self.confidence = confidence
+    }
 }
 
 public protocol TextRecognizer {
@@ -36,7 +39,8 @@ public struct VisionTextRecognizer: TextRecognizer {
                 let normalized = box.boundingBox
                 runs.append(RecognizedRun(text: String(string[range]), bounds: CGRect(
                     x: normalized.minX * pageSize.width, y: normalized.minY * pageSize.height,
-                    width: normalized.width * pageSize.width, height: normalized.height * pageSize.height)))
+                    width: normalized.width * pageSize.width, height: normalized.height * pageSize.height),
+                    confidence: candidate.confidence))
             }
             return runs
         }
@@ -75,8 +79,10 @@ public enum PageRecognizer {
                                engine: any TextRecognizer = VisionTextRecognizer()) throws -> PageRecognitionResult {
         guard let ref = page.pageRef else { throw RecognitionError.invalidPage }
         let (bounds, transform) = try geometry(for: page)
-        // 216 DPI for typical pages; cap pathological page sizes at 16 MP.
-        let scale = min(3, sqrt(16_000_000 / (bounds.width * bounds.height)))
+        // Keep card-sized scans large enough for small lettering. Ordinary pages retain
+        // the 216 DPI baseline; all renders remain capped at 16 MP.
+        let scale = min(max(3, 1600 / max(bounds.width, bounds.height)),
+                        sqrt(16_000_000 / (bounds.width * bounds.height)))
         let width = max(1, Int(ceil(bounds.width * scale)))
         let height = max(1, Int(ceil(bounds.height * scale)))
         guard let bitmap = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
@@ -91,7 +97,8 @@ public enum PageRecognizer {
         let recognized = try engine.recognize(image, pageSize: bounds.size)
         try Task.checkCancellation()
 
-        let nativeBoxes: [CGRect] = replaceExistingText ? [] : (0..<page.numberOfCharacters).compactMap { index in
+        let rebuildText = replaceExistingText || shouldRebuildScanText(page, recognized: recognized, transform: transform)
+        let nativeBoxes: [CGRect] = rebuildText ? [] : (0..<page.numberOfCharacters).compactMap { index in
             let box = page.characterBounds(at: index).applying(transform)
             return box.isEmpty || box.isInfinite || box.isNull ? nil : box
         }
@@ -116,7 +123,7 @@ public enum PageRecognizer {
               let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil)
         else { throw RecognitionError.writingFailed }
         context.beginPDFPage(nil)
-        if replaceExistingText {
+        if rebuildText {
             context.draw(image, in: bounds)
         } else {
             context.saveGState()
@@ -128,6 +135,22 @@ public enum PageRecognizer {
         context.endPDFPage()
         context.closePDF()
         return PageRecognitionResult(pdfData: output as Data, addedWordCount: additions.count)
+    }
+
+    private static func shouldRebuildScanText(_ page: PDFPage, recognized: [RecognizedRun],
+                                              transform: CGAffineTransform) -> Bool {
+        guard let ref = page.pageRef, ScanTextLayer.isImageWithOnlyInvisibleText(ref) else { return false }
+        let native = normalized(page.string ?? "")
+        let fresh = normalized(recognized.map(\.text).joined(separator: " "))
+        // Do not discard a populated OCR layer when the new engine recognizes very
+        // little (for example, an unsupported script). A manual retry remains available.
+        guard !native.isEmpty, Double(fresh.count) >= Double(native.count) * 0.8 else { return false }
+        return recognized.contains { run in
+            let expected = normalized(run.text)
+            guard run.confidence >= 0.85, expected.count >= 3 else { return false }
+            let embedded = normalized(page.selection(for: run.bounds.applying(transform.inverted()))?.string ?? "")
+            return !embedded.isEmpty && !embedded.contains(expected)
+        }
     }
 
     private static func normalized(_ text: String) -> String {

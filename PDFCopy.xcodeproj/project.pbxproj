@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0ECF5FA8EC3CFDEA6EBF5E08 /* DocumentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDD91A3CD35F4FB33725EAA /* DocumentModel.swift */; };
 		111525BAE2A154E4A164243B /* PDFSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA3117C59D8A847BC6FFE35 /* PDFSearchModel.swift */; };
+		26610DF804DC0BF127F0F8F2 /* ScanTextLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */; };
 		879CFBF5FDF1B69F17C193F9 /* PageRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4984514CC41B2656FD7016F0 /* PageRecognizer.swift */; };
 		926CCD42D70D10D26C78CFC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34C0E13403B28960D0E1381B /* Assets.xcassets */; };
 		9564E1DDFB0555A5FD9F65C3 /* PDFCopyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -16,6 +17,7 @@
 		9B4046A4F319141C1B386912 /* MobilePDFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7456A39639CCCE732463BD49 /* MobilePDFView.swift */; };
 		B18FBA82AD2981C3A8AA4D01 /* PDFSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A4FD2C118D741CAD90DA72 /* PDFSearchTests.swift */; };
 		BFCFF34702DB616D4D196F7B /* PDFCopyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */; };
+		D755436A9EA58108A518971B /* ScanTextLayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */; };
 		DCD753A269FCF4D3F00DB93B /* PDFCopyIOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7F2629C97BD8C7CC016DEF /* PDFCopyIOSApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -56,12 +58,14 @@
 		3BEAD360D22F65E10925BF5E /* MobileDocumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileDocumentTests.swift; sourceTree = "<group>"; };
 		431362699A3ACD7B65B28A59 /* PDFCopyIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PDFCopyIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4984514CC41B2656FD7016F0 /* PageRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageRecognizer.swift; sourceTree = "<group>"; };
+		67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanTextLayerTests.swift; sourceTree = "<group>"; };
 		7456A39639CCCE732463BD49 /* MobilePDFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobilePDFView.swift; sourceTree = "<group>"; };
 		808E80B5953F93CD9A21DE58 /* PDFCopyIOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PDFCopyIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FA3117C59D8A847BC6FFE35 /* PDFSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFSearchModel.swift; sourceTree = "<group>"; };
 		9B7F2629C97BD8C7CC016DEF /* PDFCopyIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFCopyIOSApp.swift; sourceTree = "<group>"; };
 		ACDD91A3CD35F4FB33725EAA /* DocumentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentModel.swift; sourceTree = "<group>"; };
 		B38F834EC7C2BE36B884FAD2 /* PDFCopyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PDFCopyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanTextLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,9 +93,19 @@
 			isa = PBXGroup;
 			children = (
 				4984514CC41B2656FD7016F0 /* PageRecognizer.swift */,
+				C522483F38FD790D3D85C8A6 /* ScanTextLayer.swift */,
 			);
 			name = PDFCopyCore;
 			path = Sources/PDFCopyCore;
+			sourceTree = "<group>";
+		};
+		3BCD935089C8EC79F7C4FCCE /* PDFCopyCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				67AED7C9C92022E4F1DE8D93 /* ScanTextLayerTests.swift */,
+			);
+			name = PDFCopyCoreTests;
+			path = Tests/PDFCopyCoreTests;
 			sourceTree = "<group>";
 		};
 		45985A0F224019EC8F1F4D18 /* Products */ = {
@@ -132,6 +146,7 @@
 				71870F612043C4F33E0B0C09 /* PDFCopy */,
 				03127AAA7850367AD108B9F8 /* PDFCopyAppTests */,
 				165340750B31D064336080CC /* PDFCopyCore */,
+				3BCD935089C8EC79F7C4FCCE /* PDFCopyCoreTests */,
 				EC0FDA81CEAAD0359FC8CC3C /* Tests */,
 				45985A0F224019EC8F1F4D18 /* Products */,
 			);
@@ -268,6 +283,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				879CFBF5FDF1B69F17C193F9 /* PageRecognizer.swift in Sources */,
+				26610DF804DC0BF127F0F8F2 /* ScanTextLayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +293,7 @@
 			files = (
 				99530EC2CE645C4A75DB67E6 /* MobileDocumentTests.swift in Sources */,
 				B18FBA82AD2981C3A8AA4D01 /* PDFSearchTests.swift in Sources */,
+				D755436A9EA58108A518971B /* ScanTextLayerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,7 +389,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -391,7 +408,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -437,7 +454,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -450,7 +467,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
