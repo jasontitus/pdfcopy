@@ -50,3 +50,13 @@ The next engine decision should compare Vision with another fully local engine o
 A follow-up test reproduced repeated document reloads during scrolling on a three-page synthetic scan. The previous build assigned the display document four times (initial open plus three OCR updates) and changed the scroll position. The fix batches short-document OCR results, defers updates during live scrolling and text selection, waits for viewport activity to settle, and restores the exact scroll origin and scale in a single layout update. Larger documents schedule an update after eight ready pages.
 
 The same regression fails against the previous source and passes against the corrected source: one initial document assignment, no reload during scrolling, then one OCR refresh after scrolling ends. All three pages retain recognized text, and zoom and scroll position stay unchanged.
+
+## Search and iOS (0.2.0)
+
+The Mac suite passes 12 synthetic tests with no failures; the opt-in private-document test is skipped in the default run. Search tests cover case-insensitive results across pages, next/previous wraparound, no matches, clearing, rapid query cancellation, document replacement, OCR result updates, and keeping the user's copy selection intact. The existing OCR and scrolling regressions continue to pass.
+
+A live Mac check on Document B found eight matches for a test query and advanced the counter with Command-G. No private contents or screenshots were added to the repository. OCR refreshes also preserve the active Mac search-field responder.
+
+Three iOS integration tests passed on an iPhone 17 Pro simulator (iOS 26.3.1), an iPad mini simulator (iOS 26.5), and an iPhone 15 Pro simulator (iOS 17.2). These exercise shared search plus a three-page synthetic scan through actual Vision OCR, deferred refresh during scrolling, preserved scale/offset, and copying recognized text to the iOS pasteboard. An unsigned physical-device build also succeeded. Simulator UI inspection stalled, so these results do not establish end-to-end touch-gesture or Files/share-menu usability. Physical-device installation, touch selection, background transitions, memory pressure, and large-document performance remain to be checked before release.
+
+Search uses temporary PDFView highlights, not document annotations. It matches within a page's extracted string; line-break/layout differences and phrases spanning page boundaries can prevent a match. Results expand when recognized text reaches the displayed document. Search does not require an account or network service.

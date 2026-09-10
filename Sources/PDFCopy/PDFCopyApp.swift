@@ -16,6 +16,11 @@ struct PDFCopyApp: App {
         }
         .defaultSize(width: 1040, height: 820)
         .commands {
+            CommandGroup(after: .textEditing) {
+                Button("Find…") { model.showSearch() }.keyboardShortcut("f").disabled(model.document == nil || model.needsPassword)
+                Button("Find Next") { model.search.move(1) }.keyboardShortcut("g")
+                Button("Find Previous") { model.search.move(-1) }.keyboardShortcut("g", modifiers: [.command, .shift])
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Open PDF…") { model.chooseFile() }.keyboardShortcut("o")
             }
@@ -54,6 +59,10 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if model.document != nil, !model.needsPassword {
+                if model.showsSearch {
+                    PDFSearchBar(search: model.search, recognizing: model.running) { model.showsSearch = false }
+                    Divider()
+                }
                 NativePDFView(model: model)
             } else if model.needsPassword {
                 VStack(spacing: 16) {
@@ -99,6 +108,7 @@ struct ContentView: View {
             }
             ToolbarItemGroup {
                 if model.document != nil, !model.needsPassword {
+                    Button { model.showSearch() } label: { Label("Search", systemImage: "magnifyingglass") }
                     Button { model.pdfView?.zoomOut(nil) } label: { Image(systemName: "minus.magnifyingglass") }.help("Zoom out")
                     Button { model.pdfView?.zoomIn(nil) } label: { Image(systemName: "plus.magnifyingglass") }.help("Zoom in")
                     Button("Fit") { model.pdfView?.autoScales = true }.help("Fit page to window")
@@ -133,11 +143,13 @@ struct NativePDFView: NSViewRepresentable {
         view.document = model.document
         view.layoutDocumentView()
         model.pdfView = view
+        model.search.attach(document: model.document, view: view)
         context.coordinator.observe(view)
         return view
     }
     func updateNSView(_ view: PDFView, context: Context) {
         if view.document !== model.document { view.document = model.document; view.autoScales = true }
+        model.search.attach(document: model.document, view: view)
         context.coordinator.observeScrolling(in: view)
     }
     @MainActor final class Coordinator: NSObject {

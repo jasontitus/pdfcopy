@@ -49,3 +49,5 @@ report.json
 
 # Reviewed public artwork; keep other screenshots and images excluded.
 !Assets/AppIcon.png
+
+!iOS/PDFCopy/Assets.xcassets/AppIcon.appiconset/AppIcon.png

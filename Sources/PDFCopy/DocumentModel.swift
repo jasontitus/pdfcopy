@@ -1,4 +1,8 @@
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
 import PDFKit
 import PDFCopyCore
 import SwiftUI
@@ -30,6 +34,8 @@ final class DocumentModel: ObservableObject {
     @Published var needsPassword = false
     @Published var hasSelection = false
     @Published var failedPages: Set<Int> = []
+    let search = PDFSearchModel()
+    @Published var showsSearch = false
     weak var pdfView: PDFView?
     private var sourceData: Data?
     private var worker: OCRWorker?
@@ -47,8 +53,17 @@ final class DocumentModel: ObservableObject {
     private var applyingPages = false
     private let updateBatchSize = 8
 
+    private var readyMessage: String {
+        #if os(macOS)
+        return "Ready · double-click a word or drag to select text"
+        #else
+        return "Ready · touch and hold text to select and copy"
+        #endif
+    }
+
     var pageCount: Int { document?.pageCount ?? 0 }
 
+    #if os(macOS)
     func chooseFile() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.pdf]
@@ -58,6 +73,8 @@ final class DocumentModel: ObservableObject {
             Task { @MainActor in self?.open(url) }
         }
     }
+
+    #endif
 
     func open(_ url: URL) {
         let scoped = url.startAccessingSecurityScopedResource()
@@ -74,6 +91,7 @@ final class DocumentModel: ObservableObject {
             worker = nil
             pending = []; replacements = [:]; forced = []; completed = []; failedPages = []; activeRequest = nil
             processed = 0; currentPage = 0; hasSelection = false; running = false
+            search.reset()
             sourceData = data; document = pdf; fileName = url.lastPathComponent
             password = ""
             needsPassword = pdf.isLocked
@@ -126,7 +144,7 @@ final class DocumentModel: ObservableObject {
                 let index = self.pending.min { abs($0 - self.currentPage) < abs($1 - self.currentPage) }!
                 let replace = self.forced.remove(index) != nil
                 self.activeRequest = (index, replace)
-                self.status = "Recognizing page \(index + 1) of \(self.pageCount) · on this Mac"
+                self.status = "Recognizing page \(index + 1) of \(self.pageCount) · on this device"
                 do {
                     let result = try await worker.process(index: index, replace: replace)
                     guard !Task.isCancelled, self.generation == token else { return }
@@ -148,7 +166,7 @@ final class DocumentModel: ObservableObject {
             guard let self, !Task.isCancelled, self.generation == token else { return }
             self.running = false
             self.status = self.failedPages.isEmpty
-                ? (self.replacements.isEmpty ? "Ready · double-click a word or drag to select text"
+                ? (self.replacements.isEmpty ? self.readyMessage
                     : "Text recognized · finishing when the page is idle")
                 : "Recognition failed on \(self.failedPages.count) page(s) · use Recognize Again to retry"
             self.scheduleDisplayUpdate()
@@ -184,13 +202,25 @@ final class DocumentModel: ObservableObject {
     }
 
     private func applyReadyPages() {
+        #if os(iOS)
+        if let scroll = pdfView?.contentScrollView,
+           scroll.isTracking || scroll.isDragging || scroll.isDecelerating || scroll.isZooming {
+            scrollActivity()
+            return
+        }
+        #endif
         guard let document, let view = pdfView,
               !liveScrolling, ProcessInfo.processInfo.systemUptime - lastViewportActivity >= 0.5,
               view.currentSelection?.string?.isEmpty ?? true, !replacements.isEmpty else { return }
         let oldPage = view.currentPage.map { document.index(for: $0) }.flatMap { $0 == NSNotFound ? nil : $0 } ?? currentPage
         let point = view.currentDestination?.point ?? .zero
         let scale = view.scaleFactor
+        #if os(macOS)
+        let responder = view.window?.firstResponder
         let scrollOrigin = view.documentView?.enclosingScrollView?.contentView.bounds.origin
+        #else
+        let scrollOrigin = view.contentScrollView?.contentOffset
+        #endif
         // Do not mutate PDFView's live document. Its accessibility tree retains page
         // references; moving pages between documents can leave stale CoreGraphics roots.
         let staging = PDFDocument()
@@ -207,6 +237,7 @@ final class DocumentModel: ObservableObject {
         // Present document, scale, and scroll restoration in a single screen update.
         CATransaction.begin()
         CATransaction.setDisableActions(true)
+        #if os(macOS)
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0
             context.allowsImplicitAnimation = false
@@ -222,16 +253,41 @@ final class DocumentModel: ObservableObject {
             }
             view.layoutSubtreeIfNeeded()
             view.displayIfNeeded()
+            if let responder { view.window?.makeFirstResponder(responder) }
         }
+        #else
+        UIView.performWithoutAnimation {
+            self.document = refreshed
+            view.document = refreshed
+            view.scaleFactor = scale
+            view.layoutDocumentView()
+            view.layoutIfNeeded()
+            if let origin = scrollOrigin, let scroll = view.contentScrollView {
+                scroll.setContentOffset(origin, animated: false)
+            } else if let page = refreshed.page(at: min(oldPage, refreshed.pageCount - 1)) {
+                view.go(to: PDFDestination(page: page, at: point))
+            }
+        }
+        #endif
         CATransaction.commit()
+        search.attach(document: refreshed, view: view)
         replacements.removeAll()
         if !running, failedPages.isEmpty {
-            status = pending.isEmpty ? "Ready · double-click a word or drag to select text"
+            status = pending.isEmpty ? readyMessage
                 : "Recognition paused · existing text is still selectable"
         }
     }
 
-    func copySelection() { pdfView?.copy(nil) }
+    func showSearch() { showsSearch = true; search.focusRequest = UUID() }
+
+    func copySelection() {
+        #if os(macOS)
+        pdfView?.copy(nil)
+        #else
+        guard document?.allowsCopying == true, let text = pdfView?.currentSelection?.string else { return }
+        UIPasteboard.general.string = text
+        #endif
+    }
     func movePage(_ delta: Int) {
         guard let page = document?.page(at: max(0, min(pageCount - 1, currentPage + delta))) else { return }
         pdfView?.go(to: page)

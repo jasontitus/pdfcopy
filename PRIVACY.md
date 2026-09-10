@@ -6,7 +6,7 @@ PDFCopy uses Apple's Vision framework for on-device OCR. The app has no account 
 
 The selected PDF and derived text layers are held in memory. The app does not save OCR results, overwrite the original file, or create a persistent document library. Reopening a file runs recognition again. A PDF password is used to unlock the document; the app does not save it to preferences or a credential store.
 
-Copy explicitly writes the selected content to the system clipboard. Clipboard managers, Universal Clipboard, destination apps, OS diagnostics, and files already stored in a synced folder follow the user's system settings. The development app is not a hardened sandbox or a secure-erasure tool.
+Copy explicitly writes the selected content to the system clipboard. Clipboard managers, Universal Clipboard, destination apps, OS diagnostics, and files already stored in a synced folder follow the user's system settings. The Mac development app is not a hardened sandbox. The iOS app uses the standard application sandbox and security-scoped Files access. Neither is a secure-erasure tool. A document provider may download a PDF from the user’s existing cloud storage before opening it. Search queries and results remain in memory and are cleared when another PDF opens.
 
 ## Tests and development
 

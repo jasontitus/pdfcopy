@@ -9,3 +9,7 @@ The source PNG is explicitly allowed by `.gitignore`; the broader exclusions for
 ## Generation prompt
 
 Use case: logo-brand. Asset type: finished macOS app icon for PDFCopy, a private on-device PDF text selection and copying utility. Create one polished square 1024x1024 raster icon, not a mockup or sheet of variants. A clean rounded-square macOS tile with a deep blue-to-teal surface, a centered white paper page with a small folded corner, three simple dark text strokes, and a vivid cyan text-selection highlight across the middle stroke with two subtle selection end marks. Refined softly dimensional materials, restrained edge lighting and depth, calm professional native Mac utility aesthetic. Strong single silhouette and generous margins, readable at tiny Dock sizes. Straight-on orthographic view. Icon fills about 88 percent of the canvas; outside the rounded-square tile is genuinely transparent. No words, letters, numbers, magnifying glasses, padlocks, brand marks, watermarks, desktop background, or extra objects.
+
+## iOS icon
+
+`iOS/PDFCopy/Assets.xcassets/AppIcon.appiconset/AppIcon.png` reuses the same artwork at 1024 × 1024, flattened onto a blue background without transparency for iOS packaging. The asset catalog is assigned to the iPhone/iPad target. Both icon files are intentionally public; no document content was used.

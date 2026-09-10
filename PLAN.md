@@ -6,7 +6,7 @@
 - Primary path: open a PDF → double-click or drag over text → Command-C → paste in another app.
 - Support PDFs with embedded text, image-only scans, and mixed pages.
 - All document processing stays on-device. No accounts, uploads, analytics, remote OCR, or model API calls.
-- No editing or annotation tools. Search and image copying are phase 2. PDF questions come later and must remain local.
+- No editing or annotation tools. Search is implemented; image copying remains phase 2. PDF questions come later and must remain local.
 
 ## Phase 1: Mac prototype
 
@@ -28,13 +28,13 @@ The prototype uses Vision language autodetection and its installed supported lan
 
 ## Phase 2
 
-- Search across embedded and recognized text, with navigation and highlights.
+- Implemented: search across embedded and recognized text, with navigation and temporary highlights.
 - Copy page image regions to the clipboard using a simple selection gesture.
 - Improve layout handling and OCR engine selection based on measured failures.
 
 ## iOS
 
-Reuse `PDFCopyCore`; build the document-picker/share-sheet and UIKit PDFView integration. Validate touch selection, Copy menu, memory pressure, background cancellation, and phone/iPad layouts. The Mac shell is not an iOS app yet.
+Implemented an iOS 17+ iPhone/iPad app with Files import, Open In registration, password handling, native UIKit PDFView selection, Copy, search, and on-device OCR. Document scheduling and search are shared with the Mac; the view and clipboard integration are platform-specific. OCR pauses in the background and resumes on return. Real-device touch selection, memory pressure, background transitions, and large-document performance remain release validation items. App Store/TestFlight signing is not configured.
 
 ## Later: local PDF questions
 
