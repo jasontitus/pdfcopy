@@ -17,14 +17,14 @@ Use SwiftUI for the shell, PDFKit for display and native selection, and Vision a
 3. Process visible-page-first on a background actor, then nearby pages; permit pausing.
 4. Render each page through its crop/rotation transform and recognize text with word positions.
 5. Create an in-memory derivative page retaining original content plus invisible text for missing words. Avoid duplicate text in regions with an existing text layer. Never save over the source.
-6. Defer page replacement while the user has an active text selection. Provide a manual full-page OCR rebuild for bad embedded text.
+6. Batch page replacement and defer it during live scrolling or active text selection; preserve the viewport and zoom. Provide a manual full-page OCR rebuild for bad embedded text.
 7. Verify real OCR, native-text retention, mixed pages, crop/rotation, and selection at recognized coordinates. Package a runnable local app.
 
 ## Phase 1 validation before calling it production-ready
 
 The engine choice remains provisional until tested against representative user PDFs. Evaluate ordinary scans, photographs, skew, low contrast, multiple columns, tables, small type, unusual fonts, and required languages. Measure copied-text error rate, time until the visible page is selectable, text/highlight alignment, reading order, and peak memory on long files. Include an offline launch/run check on a clean machine.
 
-The prototype uses Vision language autodetection and its installed supported languages. It cannot promise recognition of every language, handwriting style, equation, or illegible scan. Complex column/table reading order needs explicit validation. The app currently holds documents in memory, recomputes OCR on reopening, and does not have a persistent OCR cache. It serializes a fresh display document for each page update to keep PDFKit page ownership and accessibility references valid; batching these updates is needed for very long PDFs. Existing annotations/forms and navigation links also need preservation testing when OCR replaces a page. Add bounded caching, large-document stress tests, per-page OCR diagnostics, accessibility and keyboard QA, and a signed/notarized release before distribution.
+The prototype uses Vision language autodetection and its installed supported languages. It cannot promise recognition of every language, handwriting style, equation, or illegible scan. Complex column/table reading order needs explicit validation. The app currently holds documents in memory, recomputes OCR on reopening, and does not have a persistent OCR cache. It serializes a fresh display document for each batch to keep PDFKit page ownership and accessibility references valid; larger-document performance still needs measurement. Existing annotations/forms and navigation links also need preservation testing when OCR replaces a page. Add bounded caching, large-document stress tests, per-page OCR diagnostics, accessibility and keyboard QA, and a signed/notarized release before distribution.
 
 ## Phase 2
 

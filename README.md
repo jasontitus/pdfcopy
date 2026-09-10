@@ -21,6 +21,8 @@ Open or drop a PDF. Existing text is selectable immediately. OCR adds selectable
 
 The local app bundle is ad-hoc signed for development, not notarized for distribution. It contains no third-party dependencies or network code. Text copied to the system clipboard is handled by macOS and the user's clipboard settings.
 
+OCR display updates are batched and wait until scrolling and text selection have stopped. Short documents refresh once after recognition; longer documents schedule updates after eight ready pages. The viewport and zoom are preserved during each refresh.
+
 This is an early macOS prototype. The iOS interface is not implemented yet. Read the [privacy notes](PRIVACY.md), [roadmap](PLAN.md), and [known limitations](VALIDATION.md) before testing important documents.
 
 ## Install on your Mac

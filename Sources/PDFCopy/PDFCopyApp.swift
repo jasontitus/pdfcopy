@@ -131,18 +131,22 @@ struct NativePDFView: NSViewRepresentable {
         view.displaysPageBreaks = true
         view.backgroundColor = .windowBackgroundColor
         view.document = model.document
+        view.layoutDocumentView()
         model.pdfView = view
         context.coordinator.observe(view)
         return view
     }
     func updateNSView(_ view: PDFView, context: Context) {
         if view.document !== model.document { view.document = model.document; view.autoScales = true }
+        context.coordinator.observeScrolling(in: view)
     }
-    @MainActor final class Coordinator {
+    @MainActor final class Coordinator: NSObject {
         let model: DocumentModel
         var observers: [NSObjectProtocol] = []
-        init(model: DocumentModel) { self.model = model }
+        private weak var observedScrollView: NSScrollView?
+        init(model: DocumentModel) { self.model = model; super.init() }
         func observe(_ view: PDFView) {
+            observeScrolling(in: view)
             observers.append(NotificationCenter.default.addObserver(forName: .PDFViewPageChanged, object: view, queue: .main) { [weak self, weak view] _ in
                 Task { @MainActor in
                     guard let self, let page = view?.currentPage, let doc = view?.document else { return }
@@ -154,6 +158,26 @@ struct NativePDFView: NSViewRepresentable {
                 Task { @MainActor in self?.model.selectionChanged() }
             })
         }
-        deinit { observers.forEach { NotificationCenter.default.removeObserver($0) } }
+        func observeScrolling(in view: PDFView) {
+            guard let scroll = view.documentView?.enclosingScrollView, observedScrollView !== scroll else { return }
+            let center = NotificationCenter.default
+            for name in [NSScrollView.willStartLiveScrollNotification, NSScrollView.didLiveScrollNotification,
+                         NSScrollView.didEndLiveScrollNotification, NSView.boundsDidChangeNotification] {
+                center.removeObserver(self, name: name, object: nil)
+            }
+            observedScrollView = scroll
+            scroll.contentView.postsBoundsChangedNotifications = true
+            center.addObserver(self, selector: #selector(scrollBegan), name: NSScrollView.willStartLiveScrollNotification, object: scroll)
+            center.addObserver(self, selector: #selector(scrollMoved), name: NSScrollView.didLiveScrollNotification, object: scroll)
+            center.addObserver(self, selector: #selector(scrollEnded), name: NSScrollView.didEndLiveScrollNotification, object: scroll)
+            center.addObserver(self, selector: #selector(scrollMoved), name: NSView.boundsDidChangeNotification, object: scroll.contentView)
+        }
+        @objc private func scrollBegan(_ notification: Notification) { model.scrollActivity(began: true) }
+        @objc private func scrollMoved(_ notification: Notification) { model.scrollActivity() }
+        @objc private func scrollEnded(_ notification: Notification) { model.scrollActivity(ended: true) }
+        deinit {
+            observers.forEach { NotificationCenter.default.removeObserver($0) }
+            NotificationCenter.default.removeObserver(self)
+        }
     }
 }

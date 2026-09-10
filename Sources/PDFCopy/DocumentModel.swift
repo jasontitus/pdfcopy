@@ -2,6 +2,7 @@ import AppKit
 import PDFKit
 import PDFCopyCore
 import SwiftUI
+import QuartzCore
 
 actor OCRWorker {
     private let document: PDFDocument?
@@ -40,6 +41,11 @@ final class DocumentModel: ObservableObject {
     private var forced: Set<Int> = []
     private var completed: Set<Int> = []
     private var activeRequest: (index: Int, replace: Bool)?
+    private var displayUpdate: Task<Void, Never>?
+    private var liveScrolling = false
+    private var lastViewportActivity = -Double.infinity
+    private var applyingPages = false
+    private let updateBatchSize = 8
 
     var pageCount: Int { document?.pageCount ?? 0 }
 
@@ -62,7 +68,9 @@ final class DocumentModel: ObservableObject {
                 error = "This file is not a readable PDF."; return
             }
             job?.cancel()
+            displayUpdate?.cancel()
             generation = UUID()
+            liveScrolling = false; lastViewportActivity = -Double.infinity
             worker = nil
             pending = []; replacements = [:]; forced = []; completed = []; failedPages = []; activeRequest = nil
             processed = 0; currentPage = 0; hasSelection = false; running = false
@@ -104,6 +112,7 @@ final class DocumentModel: ObservableObject {
             if let request = activeRequest, request.replace { forced.insert(request.index) }
             job?.cancel(); generation = UUID(); running = false
             status = "Recognition paused · existing text is still selectable"
+            scheduleDisplayUpdate()
         } else if !pending.isEmpty { runQueue() }
     }
 
@@ -123,7 +132,7 @@ final class DocumentModel: ObservableObject {
                     guard !Task.isCancelled, self.generation == token else { return }
                     if let data = result.pdfData, let replacement = PDFDocument(data: data) {
                         self.replacements[index] = replacement
-                        self.applyReadyPages()
+                        if self.replacements.count >= self.updateBatchSize { self.scheduleDisplayUpdate() }
                     }
                     self.failedPages.remove(index)
                 } catch {
@@ -140,22 +149,48 @@ final class DocumentModel: ObservableObject {
             self.running = false
             self.status = self.failedPages.isEmpty
                 ? (self.replacements.isEmpty ? "Ready · double-click a word or drag to select text"
-                    : "Text recognized · clear your selection to enable new text")
+                    : "Text recognized · finishing when the page is idle")
                 : "Recognition failed on \(self.failedPages.count) page(s) · use Recognize Again to retry"
+            self.scheduleDisplayUpdate()
         }
     }
 
     func selectionChanged() {
         hasSelection = !(pdfView?.currentSelection?.string?.isEmpty ?? true)
-        if !hasSelection { applyReadyPages() }
+        if !hasSelection { scheduleDisplayUpdate() }
     }
 
-    func applyReadyPages() {
+    func scrollActivity(began: Bool = false, ended: Bool = false) {
+        guard !applyingPages else { return }
+        if began { liveScrolling = true }
+        if ended { liveScrolling = false }
+        lastViewportActivity = ProcessInfo.processInfo.systemUptime
+        displayUpdate?.cancel()
+        if !liveScrolling { scheduleDisplayUpdate() }
+    }
+
+    private func scheduleDisplayUpdate() {
+        displayUpdate?.cancel()
+        guard !liveScrolling, !hasSelection, !replacements.isEmpty,
+              !running || replacements.count >= updateBatchSize else { return }
+        let token = generation
+        let delay = max(0.15, 0.5 - (ProcessInfo.processInfo.systemUptime - lastViewportActivity))
+        displayUpdate = Task { [weak self] in
+            do { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) }
+            catch { return }
+            guard let self, !Task.isCancelled, self.generation == token else { return }
+            self.applyReadyPages()
+        }
+    }
+
+    private func applyReadyPages() {
         guard let document, let view = pdfView,
+              !liveScrolling, ProcessInfo.processInfo.systemUptime - lastViewportActivity >= 0.5,
               view.currentSelection?.string?.isEmpty ?? true, !replacements.isEmpty else { return }
-        let oldPage = view.currentPage.map { document.index(for: $0) } ?? currentPage
+        let oldPage = view.currentPage.map { document.index(for: $0) }.flatMap { $0 == NSNotFound ? nil : $0 } ?? currentPage
         let point = view.currentDestination?.point ?? .zero
         let scale = view.scaleFactor
+        let scrollOrigin = view.documentView?.enclosingScrollView?.contentView.bounds.origin
         // Do not mutate PDFView's live document. Its accessibility tree retains page
         // references; moving pages between documents can leave stale CoreGraphics roots.
         let staging = PDFDocument()
@@ -167,15 +202,33 @@ final class DocumentModel: ObservableObject {
         guard let data = staging.dataRepresentation(), let refreshed = PDFDocument(data: data) else {
             error = "Could not update the PDF with recognized text."; return
         }
-        self.document = refreshed
-        view.document = refreshed
-        replacements.removeAll()
-        if let page = refreshed.page(at: min(oldPage, refreshed.pageCount - 1)) {
-            view.go(to: PDFDestination(page: page, at: point))
+        applyingPages = true
+        defer { applyingPages = false }
+        // Present document, scale, and scroll restoration in a single screen update.
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0
+            context.allowsImplicitAnimation = false
+            self.document = refreshed
+            view.document = refreshed
+            view.scaleFactor = scale
+            view.layoutDocumentView()
+            if let origin = scrollOrigin, let scroll = view.documentView?.enclosingScrollView {
+                scroll.contentView.scroll(to: origin)
+                scroll.reflectScrolledClipView(scroll.contentView)
+            } else if let page = refreshed.page(at: min(oldPage, refreshed.pageCount - 1)) {
+                view.go(to: PDFDestination(page: page, at: point))
+            }
+            view.layoutSubtreeIfNeeded()
+            view.displayIfNeeded()
         }
-        view.scaleFactor = scale
-        view.needsDisplay = true
-        if !running, failedPages.isEmpty { status = "Ready · double-click a word or drag to select text" }
+        CATransaction.commit()
+        replacements.removeAll()
+        if !running, failedPages.isEmpty {
+            status = pending.isEmpty ? "Ready · double-click a word or drag to select text"
+                : "Recognition paused · existing text is still selectable"
+        }
     }
 
     func copySelection() { pdfView?.copy(nil) }

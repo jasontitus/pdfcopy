@@ -44,3 +44,9 @@ swift test --disable-sandbox
 Private extracted text, rendered comparison images, and raw metrics stay in `.build/validation/`, which is ignored by version control. No source PDFs or extracted private content are embedded in the test source.
 
 The next engine decision should compare Vision with another fully local engine on these specific failures. MinerU has not yet been benchmarked or installed.
+
+## Scrolling regression
+
+A follow-up test reproduced repeated document reloads during scrolling on a three-page synthetic scan. The previous build assigned the display document four times (initial open plus three OCR updates) and changed the scroll position. The fix batches short-document OCR results, defers updates during live scrolling and text selection, waits for viewport activity to settle, and restores the exact scroll origin and scale in a single layout update. Larger documents schedule an update after eight ready pages.
+
+The same regression fails against the previous source and passes against the corrected source: one initial document assignment, no reload during scrolling, then one OCR refresh after scrolling ends. All three pages retain recognized text, and zoom and scroll position stay unchanged.

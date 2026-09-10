@@ -33,8 +33,9 @@ final class DocumentModelTests: XCTestCase {
         model.pdfView = view
         model.open(url)
         view.document = model.document
+        let originalDocument = model.document
         let deadline = Date().addingTimeInterval(20)
-        while model.running, Date() < deadline { try await Task.sleep(nanoseconds: 30_000_000) }
+        while (model.running || model.document === originalDocument), Date() < deadline { try await Task.sleep(nanoseconds: 30_000_000) }
         XCTAssertFalse(model.running)
         XCTAssertTrue(model.failedPages.isEmpty)
         XCTAssertEqual(model.processed, 2)
@@ -62,8 +63,73 @@ final class DocumentModelTests: XCTestCase {
         XCTAssertEqual(view.currentSelection?.string, selectedText)
         view.clearSelection()
         model.selectionChanged()
+        let applyDeadline = Date().addingTimeInterval(3)
+        while model.document === selectedDocument, Date() < applyDeadline { try await Task.sleep(nanoseconds: 30_000_000) }
         XCTAssertFalse(model.document === selectedDocument, "Apply the pending OCR after selection ends")
         XCTAssertTrue(view.document?.page(at: 0)?.string?.contains("scanned") == true)
         visit(view)
     }
+
+    @MainActor
+    func testOCRDoesNotReloadWhileScrollingAndPreservesViewportAfterOneBatch() async throws {
+        _ = NSApplication.shared
+        let source = PDFDocument()
+        let image = NSImage(size: NSSize(width: 612, height: 792))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSRect(x: 0, y: 0, width: 612, height: 792).fill()
+        ("Scrolling should stay steady." as NSString).draw(at: NSPoint(x: 60, y: 650),
+            withAttributes: [.font: NSFont.systemFont(ofSize: 24), .foregroundColor: NSColor.black])
+        image.unlockFocus()
+        for _ in 0..<3 { source.insert(try XCTUnwrap(PDFPage(image: image)), at: source.pageCount) }
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("pdfcopy-scroll-\(UUID()).pdf")
+        try XCTUnwrap(source.dataRepresentation()).write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let model = DocumentModel()
+        let view = CountingPDFView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        view.displayMode = .singlePageContinuous
+        model.pdfView = view
+        model.open(url)
+        view.document = model.document
+        view.scaleFactor = 1.2
+        view.layoutDocumentView()
+        let coordinator = NativePDFView.Coordinator(model: model)
+        coordinator.observe(view)
+        let scroll = try XCTUnwrap(view.documentView?.enclosingScrollView)
+        let original = model.document
+        NotificationCenter.default.post(name: NSScrollView.willStartLiveScrollNotification, object: scroll)
+        scroll.contentView.scroll(to: NSPoint(x: 0, y: 900))
+        scroll.reflectScrolledClipView(scroll.contentView)
+        let origin = scroll.contentView.bounds.origin
+        let scale = view.scaleFactor
+
+        let deadline = Date().addingTimeInterval(20)
+        while model.running, Date() < deadline { try await Task.sleep(nanoseconds: 30_000_000) }
+        XCTAssertFalse(model.running)
+        // Keep live scrolling beyond the idle debounce to catch a timer-only workaround.
+        try await Task.sleep(nanoseconds: 700_000_000)
+        XCTAssertTrue(model.document === original)
+        XCTAssertEqual(view.documentAssignments, 1, "OCR must not reload the canvas while scrolling")
+        XCTAssertEqual(model.processed, 3)
+
+        NotificationCenter.default.post(name: NSScrollView.didEndLiveScrollNotification, object: scroll)
+        let applyDeadline = Date().addingTimeInterval(4)
+        while model.document === original, Date() < applyDeadline { try await Task.sleep(nanoseconds: 30_000_000) }
+        XCTAssertFalse(model.document === original)
+        XCTAssertEqual(view.documentAssignments, 2, "Three OCR pages should produce one display refresh")
+        XCTAssertEqual(view.scaleFactor, scale, accuracy: 0.001)
+        let newOrigin = try XCTUnwrap(view.documentView?.enclosingScrollView?.contentView.bounds.origin)
+        XCTAssertEqual(newOrigin.x, origin.x, accuracy: 1)
+        XCTAssertEqual(newOrigin.y, origin.y, accuracy: 1)
+        for index in 0..<3 {
+            XCTAssertTrue(view.document?.page(at: index)?.string?.contains("Scrolling should stay steady.") == true)
+        }
+        withExtendedLifetime(coordinator) {}
+    }
+}
+
+@MainActor private final class CountingPDFView: PDFView {
+    var documentAssignments = 0
+    override var document: PDFDocument? { didSet { documentAssignments += 1 } }
 }
